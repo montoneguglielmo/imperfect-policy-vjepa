@@ -13,7 +13,7 @@ import torch.nn as nn
 
 from src.models.utils.patch_embed import PatchEmbed, PatchEmbed3D
 from src.models.utils.modules import Block
-from src.models.utils.pos_embs import get_2d_sincos_pos_embed, get_3d_sincos_pos_embed
+from src.models.utils.pos_embs import get_1d_sincos_pos_embed_from_grid, get_2d_sincos_pos_embed, get_3d_sincos_pos_embed
 from src.utils.tensors import trunc_normal_
 from src.masks.utils import apply_masks
 
@@ -77,6 +77,13 @@ class VisionTransformer(nn.Module):
                 (img_size // patch_size)
                 * (img_size // patch_size)
             )
+
+        if self.encode_robot:
+            self.action_dim = kwargs['action_dim']
+            self.robot_state_dim = kwargs['robot_state_dim']
+            self.action_emb = nn.Linear(embed_dim, self.action_dim)
+            self.robot_state_emb = nn.Linear(embed_dim, self.robot_state_dim)
+            self.action_state_pos = get_1d_sincos_pos_embed_from_grid(embed_dim, np.arange(kwargs['']))
 
         # Position embedding
         self.uniform_power = uniform_power
@@ -170,6 +177,7 @@ class VisionTransformer(nn.Module):
         if pos_embed is not None:
             pos_embed = self.interpolate_pos_encoding(x, pos_embed)
         x = self.patch_embed(x)
+        print('x shape', x.shape)
         if pos_embed is not None:
             x += pos_embed
         B, N, D = x.shape

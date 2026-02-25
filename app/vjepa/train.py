@@ -449,7 +449,11 @@ def main(args, resume_preempt=False):
 
                 return (clips, _masks_enc, _masks_pred)
             
+
             clips, masks_enc, masks_pred = load_clips()
+            print('clips', clips.shape)
+            print('masks_enc', masks_enc[0].shape)
+            print('mask_pred', masks_pred[0].shape)
 
             # Debug: print actual mask values for first sample
             debug_mode = args.get('debug', {}).get('enabled', False)
