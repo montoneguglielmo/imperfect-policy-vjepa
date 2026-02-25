@@ -168,7 +168,13 @@ class VisionTransformer(nn.Module):
         :param x: input image/video
         :param masks: indices of patch tokens to mask (remove)
         """
-
+        
+        if self.encode_robot:
+            actions = x[1]
+            states = [2]
+            x = x[0]
+        
+        
         if masks is not None and not isinstance(masks, list):
             masks = [masks]
 
@@ -181,6 +187,12 @@ class VisionTransformer(nn.Module):
         if pos_embed is not None:
             x += pos_embed
         B, N, D = x.shape
+        
+        if self.encode_robot:
+            action_embeded = self.action_emb(actions) + self.action_state_pos
+            state_embeded = self.robot_state_emb(states) + self.action_state_pos
+            x = torch.cat([x, action_embeded, state_embeded])
+            B, N, D = x.shape
 
         # Mask away unwanted tokens (if masks provided)
         if masks is not None:
